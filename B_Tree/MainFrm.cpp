@@ -32,6 +32,7 @@ static UINT indicators[] =
 // CMainFrame 构造/析构
 
 CMainFrame::CMainFrame()
+	: m_bSplitterWndCreated(false)
 {
 	// TODO: 在此添加成员初始化代码
 }
@@ -95,3 +96,42 @@ void CMainFrame::Dump(CDumpContext& dc) const
 
 // CMainFrame 消息处理程序
 
+
+
+BOOL CMainFrame::OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext)
+{
+	// TODO: 在此添加专用代码和/或调用基类
+	m_bSplitterWndCreated = false;
+	if (!m_wndSplitter.CreateStatic(this, 2, 1))
+	{
+		TRACE0("Failed to create splitter window\n");
+		return FALSE;
+	}
+	CRect rect;
+	GetClientRect(&rect);
+	if (!m_wndSplitter.CreateView(
+		0,
+		0,
+		RUNTIME_CLASS(CB_TreeDraw),
+		CSize(rect.Width(), rect.Height() * 3 / 4),
+		pContext)
+		)
+	{
+		TRACE0("Failed to create left pane view\n");
+		return FALSE;
+	}
+	if (!m_wndSplitter.CreateView(
+		1,
+		0,
+		RUNTIME_CLASS(CB_TreeCrl),
+		CSize(rect.Width(), rect.Height() * 1 / 4),
+		pContext))
+	{
+		TRACE0("Failed to create right pane frame\n");
+		return FALSE;
+	}
+	//  窗口已经创建，允许执行窗口重绘功能
+	m_bSplitterWndCreated = true;
+	return true;
+	//return CFrameWnd::OnCreateClient(lpcs, pContext);
+}
